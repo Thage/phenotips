@@ -19,6 +19,7 @@ package org.phenotips.data.permissions.rest.internal;
 
 import org.phenotips.data.permissions.AccessLevel;
 import org.phenotips.data.permissions.EntityPermissionsManager;
+import org.phenotips.data.permissions.events.EntityRightsUpdatedEvent.RightsUpdateEventType;
 import org.phenotips.data.permissions.rest.CollaboratorsResource;
 import org.phenotips.data.permissions.rest.DomainObjectFactory;
 import org.phenotips.data.permissions.rest.OwnerResource;
@@ -34,6 +35,9 @@ import org.phenotips.rest.Autolinker;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
+
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -133,7 +137,6 @@ public class DefaultPermissionsResourceImpl extends XWikiResource implements Per
         this.visibilityResource.setVisibility(permissions.getVisibility(), entityId, entityType);
         this.collaboratorsResource.setCollaborators(permissions.getCollaborators(), entityId, entityType);
 
-        this.manager.fireRightsUpdateEvent(entityId);
         return Response.ok().build();
     }
 
@@ -142,17 +145,22 @@ public class DefaultPermissionsResourceImpl extends XWikiResource implements Per
     {
         this.logger.debug("Updating permissions of entity record [{}] via REST", entityId);
 
+        List<RightsUpdateEventType> updateTypes = new LinkedList<>();
+
         // No permissions checks here, since this method is just a recombination of existing endpoints
         if (permissions.getOwner() != null) {
             this.ownerResource.setOwner(permissions.getOwner(), entityId, entityType);
+            updateTypes.add(RightsUpdateEventType.ENTITY_OWNER_UPDATED);
         }
         if (permissions.getCollaborators() != null && permissions.getCollaborators().getCollaborators() != null) {
             this.collaboratorsResource.addCollaborators(permissions.getCollaborators(), entityId, entityType);
+            updateTypes.add(RightsUpdateEventType.ENTITY_COLLABORATORS_UPDATED);
         }
         if (permissions.getVisibility() != null) {
             this.visibilityResource.setVisibility(permissions.getVisibility(), entityId, entityType);
+            updateTypes.add(RightsUpdateEventType.ENTITY_VISIBILITY_UPDATED);
         }
-        this.manager.fireRightsUpdateEvent(entityId);
+
         return Response.ok().build();
     }
 }

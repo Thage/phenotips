@@ -95,6 +95,7 @@ public interface PermissionsManager
 
     /**
      * Gets the {@link PatientAccess} for the {@code targetPatient}.
+     * 
      * @param targetPatient the {@link Patient} of interest
      * @return the {@link PatientAccess} for {@code targetPatient}
      * @deprecated since 1.4; use {@link EntityPermissionsManager#getEntityAccess(PrimaryEntity)} instead

@@ -46,12 +46,13 @@
       #set ($formBindingClassName = 'PhenoTips.StudyBindingClass')
       #set ($formBindingPropertyName = 'studyReference')
       #set ($formBindingPropertyValue = $request.get("$!{formBindingClassName}_${formBindingPropertyName}"))
-      #if ($formBindingPropertyValue)
+      #if ($formBindingPropertyValue &amp;&amp; "$!formBindingPropertyValue" != '')
         #set ($patientDoc = $patient.getSecureDocument())
         #set ($formBindingObj = $patientDoc.getObject($formBindingClassName, true))
         #if ($formBindingObj)
           #set ($discard = $formBindingObj.set($formBindingPropertyName, $formBindingPropertyValue))
           #set ($discard = $patientDoc.save())
+          $services.permissions.fireStudyUpdateEvent($patient.id)
         #end
       #end
       $response.sendRedirect($xwiki.getURL($patient.getDocumentReference(), 'edit', ''))

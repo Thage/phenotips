@@ -22,54 +22,37 @@ import org.phenotips.entities.PrimaryEntity;
 import org.xwiki.observation.event.Event;
 import org.xwiki.stability.Unstable;
 
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * An event that is fired every time entity permissions are updated.
+ * An event that is fired every time entity is assigned to a new study.
  *
  * @version $Id$
  * @since 1.4
  */
 @Unstable
-public class EntityRightsUpdatedEvent implements Event
+public class EntityStudyUpdatedEvent implements Event
 {
-    /**
-     * An enum of all the possible entity permissions event types.
-     *
-     * @since 1.4
-     */
-    public enum RightsUpdateEventType
-    {
-        /** Entity visibility updated event type. */
-        ENTITY_VISIBILITY_UPDATED,
-        /** Entity owner updated event type. */
-        ENTITY_OWNER_UPDATED,
-        /** Entity collaborators updated event type. */
-        ENTITY_COLLABORATORS_UPDATED;
-    }
-
     /** The affected entity id. */
     protected final String entityId;
 
-    /** The types of this event. */
-    protected final List<RightsUpdateEventType> eventTypes;
+    /** The affected study id. */
+    protected final String studyId;
 
     /**
      * Constructor initializing the required fields.
      *
-     * @param eventTypes the types of this event
      * @param entityId the {@link PrimaryEntity#getId() identifier} of the affected entity
+     * @param studyId the ID for the new study the entity is getting assigned to
      */
-    public EntityRightsUpdatedEvent(List<RightsUpdateEventType> eventTypes, String entityId)
+    public EntityStudyUpdatedEvent(String entityId, String studyId)
     {
         this.entityId = entityId;
-        this.eventTypes = eventTypes;
+        this.studyId = studyId;
     }
 
     /** Default constructor, to be used for declaring the events a listener wants to observe. */
-    public EntityRightsUpdatedEvent()
+    public EntityStudyUpdatedEvent()
     {
         this(null, null);
     }
@@ -77,11 +60,11 @@ public class EntityRightsUpdatedEvent implements Event
     @Override
     public boolean matches(Object otherEvent)
     {
-        if (otherEvent instanceof EntityRightsUpdatedEvent) {
-            EntityRightsUpdatedEvent otherRightsUpdateEvent = (EntityRightsUpdatedEvent) otherEvent;
+        if (otherEvent instanceof EntityStudyUpdatedEvent) {
+            EntityStudyUpdatedEvent otherRightsUpdateEvent = (EntityStudyUpdatedEvent) otherEvent;
             return this.entityId == null
-                || (StringUtils.equals(otherRightsUpdateEvent.getEntityId(), this.entityId) && otherRightsUpdateEvent
-                    .getEventTypes().equals(this.eventTypes));
+                || (StringUtils.equals(otherRightsUpdateEvent.getEntityId(), this.entityId) && StringUtils.equals(
+                    otherRightsUpdateEvent.getStudyId(), this.studyId));
         }
         return false;
     }
@@ -98,12 +81,12 @@ public class EntityRightsUpdatedEvent implements Event
     }
 
     /**
-     * Identifies the types of rights update actions performed on the entity record.
+     * Returns the study Id for the entity being updated.
      *
-     * @return a list of {@link RightsUpdateEventType}s
+     * @return the study identifier for the affected entity, or {@code null} if this isn't an actual event on an entity
      */
-    public List<RightsUpdateEventType> getEventTypes()
+    public String getStudyId()
     {
-        return this.eventTypes;
+        return this.studyId;
     }
 }
